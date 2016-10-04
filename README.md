@@ -1,6 +1,11 @@
-quantum-algorithms-scala
-========================
+# quantum-algorithms
 
-INSTALLATION:
-cd QaLib
-mvn install
+### Installation:
+```
+sbt clean publish-local
+```
+
+### Run teleportation example:
+```
+sbt 'examples/runMain qa.examples.Teleportation'
+```
