@@ -6,10 +6,18 @@ import qa.State._
 
 class StateTest extends TestCase {
 
-  "Multiplying a State by a number" should "multiply its coefficient" in {
+  "Multiplying a base State by a number" should "multiply its coefficient" in {
     val original = 0.5 * State(0, 1)
     val multiplied = 0.5 * original
     val expected = 0.25 * State(0, 1)
+
+    multiplied shouldEqual expected
+  }
+
+  "Multiplying a superposed State by a number" should "multiply its coefficient" in {
+    val original = 0.5 * State(0, 1) + 0.5 * State(1, 0)
+    val multiplied = 0.5 * original
+    val expected = 0.25 * State(0, 1) + 0.25 * State(1, 0)
 
     multiplied shouldEqual expected
   }
@@ -48,9 +56,19 @@ class StateTest extends TestCase {
     s.toVector shouldEqual DenseVector(Array(0.0, 0.5))
   }
 
+  it should "be creatable from a Vector" in {
+    val s = State.fromVector(DenseVector(Array(0.0, 0.5)))
+    s shouldEqual 0.5 * State(0, 1)
+  }
+
   "A superposed State" should "be convertible to a Vector" in {
     val s = 0.5 * State(0, 1) + 0.3 * State(1, 0)
     s.toVector shouldEqual DenseVector(Array(0.3, 0.5))
+  }
+
+  it should "be creatable from a Vector" in {
+    val s = State.fromVector(DenseVector(Array(0.3, 0.5)))
+    s shouldEqual 0.5 * State(0, 1) + 0.3 * State(1, 0)
   }
 
   val qubitGen = Gen.oneOf(0, 1)

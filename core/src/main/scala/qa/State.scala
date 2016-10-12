@@ -94,11 +94,32 @@ object SuperposedState {
 object State {
   val sqrt2 = math.sqrt(2)
 
-  def apply(qubits: Int*): State = BaseState(1, qubits)
+  def apply(qubits: Int*): State =
+    BaseState(1, qubits)
+
+  def fromVector(vector: DenseVector[Double]): State = {
+    val baseStates = vector
+      .toArray
+      .toSeq
+      .zipWithIndex
+      .filter(_._1 != 0)
+      .map{ case (coeff, index) =>
+        val qubits = Seq.fill[Int](vector.length)(0).updated(index, 1)
+        BaseState(coeff, qubits)
+      }
+
+    if(baseStates.length == 1)
+      baseStates.head
+    else
+      SuperposedState(baseStates)
+  }
 
   implicit class StateCoefficient(coeff: Double) {
     def *(s: State): State = s match {
-      case ls: BaseState => ls.copy(coefficient = ls.coefficient * coeff)
+      case s: BaseState =>
+        s.copy(coefficient = s.coefficient * coeff)
+      case ss: SuperposedState =>
+        SuperposedState(ss.states.map(coeff * _).map(_.asInstanceOf[BaseState]))
     }
   }
 }
