@@ -1,5 +1,6 @@
 package qa
 
+import breeze.linalg.DenseVector
 import org.scalacheck.Gen
 import qa.State._
 
@@ -40,6 +41,16 @@ class StateTest extends TestCase {
     val expected = State(0) + 2 * State(1)
 
     allThree shouldEqual expected
+  }
+
+  "A base State" should "be convertible to a Vector" in {
+    val s = 0.5 * State(0, 1)
+    s.toVector shouldEqual DenseVector(Array(0.0, 0.5))
+  }
+
+  "A superposed State" should "be convertible to a Vector" in {
+    val s = 0.5 * State(0, 1) + 0.3 * State(1, 0)
+    s.toVector shouldEqual DenseVector(Array(0.3, 0.5))
   }
 
   val qubitGen = Gen.oneOf(0, 1)

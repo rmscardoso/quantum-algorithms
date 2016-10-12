@@ -1,11 +1,16 @@
 package qa
 
+import breeze.linalg.DenseVector
+
 sealed trait State {
   def states: Seq[State]
   def +(other: State): State
+  def toVector: DenseVector[Double]
 }
 
 case class BaseState(coefficient: Double, qubits: Seq[Int]) extends State with Ordered[BaseState] {
+  require(qubits.forall{ q => q == 0 || q == 1 })
+
   override def states: Seq[State] =
     Seq(this)
 
@@ -19,6 +24,9 @@ case class BaseState(coefficient: Double, qubits: Seq[Int]) extends State with O
       case other: SuperposedState =>
         other + this
     }
+
+  override def toVector: DenseVector[Double] =
+    DenseVector(qubits.map(_ * coefficient).toArray)
 
   override def compare(that: BaseState): Int = {
     require(qubits.size == that.qubits.size, "States must be of equal number of qubits")
@@ -45,6 +53,8 @@ class SuperposedState private (val states: Seq[BaseState]) extends State {
         SuperposedState(states ++ other.states)
     }
 
+  override def toVector: DenseVector[Double] =
+    states.map(_.toVector).reduce(_ + _)
 
   def canEqual(other: Any): Boolean = other.isInstanceOf[SuperposedState]
 
