@@ -3,6 +3,8 @@ lazy val commonSettings = Seq(
   version := "0.1",
   scalaVersion := "2.11.8",
 
+  resolvers += "Sonatype Releases" at "https://oss.sonatype.org/content/repositories/releases/",
+
   dependencyOverrides += "org.scala-lang.modules" %% "scala-xml" % "1.0.5",
 
   updateOptions := updateOptions.value.withCachedResolution(true)
@@ -16,8 +18,10 @@ lazy val core = (project in file("core"))
   .settings(commonSettings: _*)
   .settings(
     libraryDependencies ++= Seq(
+      "org.scalanlp" %% "breeze" % "0.12",
+
       "org.scalatest" %% "scalatest" % "3.0.0" % Test,
-      "org.mockito" % "mockito-all" % "1.10.19" % Test
+      "org.scalacheck" %% "scalacheck" % "1.13.2" % Test
     )
   )
 
