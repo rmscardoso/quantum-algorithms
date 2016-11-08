@@ -63,7 +63,7 @@ class SuperposedStateTest extends TestCase {
 }
 
 object SuperposedStateTest {
-  import BaseStateTest.baseStates
+  import IndividualStateTest.baseStates
 
   val superposedStateGen = Map[Int, Gen[SuperposedState]]().withDefault { numberOfQubits =>
     for {

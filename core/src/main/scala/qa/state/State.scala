@@ -18,7 +18,7 @@ sealed trait State {
 object State {
   val sqrt2 = math.sqrt(2)
 
-  private[state] case class BaseState(coefficient: Double, qubits: Seq[Int]) extends State with Ordered[BaseState] {
+  private[state] case class IndividualState(coefficient: Double, qubits: Seq[Int]) extends State with Ordered[IndividualState] {
     require(qubits.forall{ q => q == 0 || q == 1 })
 
     override def states: Seq[State] =
@@ -26,16 +26,16 @@ object State {
 
     override def +(other: State): State =
       other match {
-        case other: BaseState =>
+        case other: IndividualState =>
           if(qubits == other.qubits)
-            BaseState(coefficient + other.coefficient, qubits)
+            IndividualState(coefficient + other.coefficient, qubits)
           else
             SuperposedState(Seq(this, other))
         case other: SuperposedState =>
           other + this
       }
 
-    override def *(d: Double): BaseState =
+    override def *(d: Double): IndividualState =
       copy(coefficient = coefficient * d)
 
     override private[qa] def toVector: DenseVector[Double] = {
@@ -49,7 +49,7 @@ object State {
       v * coefficient
     }
 
-    override def compare(that: BaseState): Int = {
+    override def compare(that: IndividualState): Int = {
       require(qubits.size == that.qubits.size, "States must be of equal number of qubits")
 
       for(i <- qubits.indices)
@@ -64,13 +64,13 @@ object State {
     override def toString = s"$coefficient|${qubits.mkString(",")}>"
   }
 
-  private[state] class SuperposedState(val states: Seq[BaseState]) extends State {
+  private[state] class SuperposedState(val states: Seq[IndividualState]) extends State {
     require(states == states.sorted, "states must be sorted")
     require(states.map(_.qubits).groupBy(identity).forall(_._2.length == 1), "base states must be unique")
 
     override def +(other: State): State =
       other match {
-        case other: BaseState =>
+        case other: IndividualState =>
           SuperposedState(states :+ other)
         case other: SuperposedState =>
           SuperposedState(states ++ other.states)
@@ -105,16 +105,16 @@ object State {
       }.mkString("")
   }
   private[state] object SuperposedState {
-    def apply(states: Seq[BaseState]): SuperposedState = {
+    def apply(states: Seq[IndividualState]): SuperposedState = {
       val consolidated = states
         .groupBy(_.qubits)
-        .mapValues{ (groupedStates: Seq[BaseState]) =>
+        .mapValues{ (groupedStates: Seq[IndividualState]) =>
           if(groupedStates.tail.isEmpty)
             groupedStates.head
           else
             groupedStates
               .reduce{ (l: State, r: State) => l + r }
-              .asInstanceOf[BaseState] }
+              .asInstanceOf[IndividualState] }
         .values
         .toSeq
         .sorted
@@ -124,7 +124,7 @@ object State {
   }
 
   def apply(qubits: Int*): State =
-    BaseState(1, qubits)
+    IndividualState(1, qubits)
 
   def fromVector(vector: DenseVector[Double]): State = {
     def unitVector(index: Int, dimensions: Int) =
@@ -136,7 +136,7 @@ object State {
       res
     }
 
-    def fromUnitVector(uv: DenseVector[Double]): BaseState = {
+    def fromUnitVector(uv: DenseVector[Double]): IndividualState = {
       val noOfQubits = lg2(uv.length)
 
       var qubits = Seq[Int]()
@@ -147,7 +147,7 @@ object State {
         remaining /= 2
       }
 
-      BaseState(1, qubits)
+      IndividualState(1, qubits)
     }
 
     val baseStates = vector
@@ -168,10 +168,10 @@ object State {
 
   implicit class StateCoefficient(coeff: Double) {
     def *(s: State): State = s match {
-      case s: BaseState =>
+      case s: IndividualState =>
         s.copy(coefficient = s.coefficient * coeff)
       case ss: SuperposedState =>
-        SuperposedState(ss.states.map(coeff * _).map(_.asInstanceOf[BaseState]))
+        SuperposedState(ss.states.map(coeff * _).map(_.asInstanceOf[IndividualState]))
     }
   }
 }

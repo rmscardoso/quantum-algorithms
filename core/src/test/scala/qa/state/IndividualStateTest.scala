@@ -5,8 +5,8 @@ import org.scalacheck.Gen
 import qa.TestCase
 import qa.state.State._
 
-class BaseStateTest extends TestCase {
-  import BaseStateTest._
+class IndividualStateTest extends TestCase {
+  import IndividualStateTest._
   import StateTest._
 
   val smallNumbersOfQubits = 1 to  2
@@ -14,9 +14,9 @@ class BaseStateTest extends TestCase {
 
   "BaseState multiplication" should "multiply the BaseState's coefficient" in {
     for(n <- allNumbersOfQubits) {
-      forAll(baseStates(n), realNumbers) { (s: BaseState, d: Double) =>
+      forAll(baseStates(n), realNumbers) { (s: IndividualState, d: Double) =>
         val multiplied = d * s
-        val expected = BaseState(d * s.coefficient, s.qubits)
+        val expected = IndividualState(d * s.coefficient, s.qubits)
 
         multiplied shouldEqual expected
       }
@@ -25,7 +25,7 @@ class BaseStateTest extends TestCase {
 
   it should "be commutative" in {
     for(n <- allNumbersOfQubits) {
-      forAll(baseStates(n), Gen.choose(-10.0, 10.0)) { (s: BaseState, d: Double) =>
+      forAll(baseStates(n), Gen.choose(-10.0, 10.0)) { (s: IndividualState, d: Double) =>
         s * d shouldEqual d * s
       }
     }
@@ -33,10 +33,10 @@ class BaseStateTest extends TestCase {
 
   "BaseState addition" should "create another BaseState for the same Qubits while adding coefficients" in {
     for(n <- smallNumbersOfQubits) {
-      forAll(baseStates(n), baseStates(n)) { (l: BaseState, r: BaseState) =>
+      forAll(baseStates(n), baseStates(n)) { (l: IndividualState, r: IndividualState) =>
         whenever(l.qubits == r.qubits) {
           l + r match {
-            case sum: BaseState =>
+            case sum: IndividualState =>
               sum.qubits shouldEqual l.qubits
               sum.coefficient shouldEqual l.coefficient + r.coefficient
 
@@ -49,7 +49,7 @@ class BaseStateTest extends TestCase {
 
   it should "create a SuperposedState for different Qubits, containing both BaseStates" in {
     for(n <- smallNumbersOfQubits) {
-      forAll(baseStates(n), baseStates(n)) { (l: BaseState, r: BaseState) =>
+      forAll(baseStates(n), baseStates(n)) { (l: IndividualState, r: IndividualState) =>
         whenever(l.qubits != r.qubits) {
           l + r match {
             case sum: SuperposedState =>
@@ -66,7 +66,7 @@ class BaseStateTest extends TestCase {
 
   it should "be commutative" in {
     for(n <- allNumbersOfQubits) {
-      forAll(baseStates(n), baseStates(n)) { (l: BaseState, r: BaseState) =>
+      forAll(baseStates(n), baseStates(n)) { (l: IndividualState, r: IndividualState) =>
         l + r shouldEqual r + l
       }
     }
@@ -74,21 +74,21 @@ class BaseStateTest extends TestCase {
 
   "BaseState substraction" should "be the same as adding it times -1" in {
     for(n <- allNumbersOfQubits) {
-      forAll(baseStates(n), baseStates(n)) { (l: BaseState, r: BaseState) =>
+      forAll(baseStates(n), baseStates(n)) { (l: IndividualState, r: IndividualState) =>
         l - r shouldEqual l + (-1 * r)
       }
     }
   }
 
   "A BaseState" should "be convertible to a Vector" in {
-    BaseState(0.5, Seq(0)).toVector shouldEqual DenseVector[Double](0.5, 0)
+    IndividualState(0.5, Seq(0)).toVector shouldEqual DenseVector[Double](0.5, 0)
 
-    BaseState(0.5, Seq(1, 0)).toVector shouldEqual DenseVector[Double](0, 0, 0.5, 0)
+    IndividualState(0.5, Seq(1, 0)).toVector shouldEqual DenseVector[Double](0, 0, 0.5, 0)
   }
 
   it should "be creatable from a Vector" in {
     for(n <- allNumbersOfQubits) {
-      forAll(baseStates(n)) { s: BaseState =>
+      forAll(baseStates(n)) { s: IndividualState =>
         val v = s.toVector
         State.fromVector(v) shouldEqual s
       }
@@ -96,13 +96,13 @@ class BaseStateTest extends TestCase {
   }
 }
 
-object BaseStateTest {
+object IndividualStateTest {
   import StateTest.qubits
 
-  val baseStates = Map[Int, Gen[BaseState]]().withDefault { numberOfQubits =>
+  val baseStates = Map[Int, Gen[IndividualState]]().withDefault { numberOfQubits =>
     for {
       coefficient <- Gen.choose(-1.0, 1.0)
       qubits <- qubits(numberOfQubits)
-    } yield BaseState(coefficient, qubits)
+    } yield IndividualState(coefficient, qubits)
   }
 }
