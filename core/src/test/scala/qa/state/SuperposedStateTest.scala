@@ -52,6 +52,14 @@ class SuperposedStateTest extends TestCase {
       }
     }
   }
+
+  "Subtracting Superposed States" should "be the same as adding it times -1" in {
+    for(n <- 1 to 10) {
+      forAll(superposedStateGen(n), superposedStateGen(n)) { (l: SuperposedState, r: SuperposedState) =>
+        l - r shouldEqual l + (-1 * r)
+      }
+    }
+  }
 }
 
 object SuperposedStateTest {

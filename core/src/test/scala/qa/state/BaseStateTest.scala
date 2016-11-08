@@ -72,6 +72,14 @@ class BaseStateTest extends TestCase {
     }
   }
 
+  "BaseState substraction" should "be the same as adding it times -1" in {
+    for(n <- allNumbersOfQubits) {
+      forAll(baseStates(n), baseStates(n)) { (l: BaseState, r: BaseState) =>
+        l - r shouldEqual l + (-1 * r)
+      }
+    }
+  }
+
   "A BaseState" should "be convertible to a Vector" in {
     BaseState(0.5, Seq(0)).toVector shouldEqual DenseVector[Double](0.5, 0)
 

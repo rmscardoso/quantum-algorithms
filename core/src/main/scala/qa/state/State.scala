@@ -10,6 +10,9 @@ sealed trait State {
   def *(d: Double): State
   def toString: String
   private[qa] def toVector: DenseVector[Double]
+
+  def -(other: State): State =
+    this + (-1 * other)
 }
 
 object State {
